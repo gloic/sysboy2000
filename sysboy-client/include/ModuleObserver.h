@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Arduino.h"
+#include "Data.h"
 
 class ModuleObserver {
 public:
-    virtual void onMessageReceived(const String& message) = 0;
+    virtual void onDataReceived(const Data& data) = 0;
 };

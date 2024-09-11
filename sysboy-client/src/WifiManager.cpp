@@ -4,7 +4,9 @@
 #include <WiFi.h>
 
 void WifiManager::setup(String ssid, String password) {
+    Log.infoln("Setup wifi");
     this->connect(ssid, password);
+    Log.infoln("> wifi ready");
 }
 
 void WifiManager::connect(String ssid, String password) {

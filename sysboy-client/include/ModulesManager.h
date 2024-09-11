@@ -2,12 +2,13 @@
 
 #include "ModuleObserver.h"
 #include "modules/Vumeter.h"
+#include "Data.h"
 
 class ModulesManager : public ModuleObserver {
     public:
         ModulesManager() : vumeter()  {}
         void setup();
-        void onMessageReceived(const String& message) override;
+        void onDataReceived(const Data& data) override;
 
         void showVumeterValue(int value);
     private:

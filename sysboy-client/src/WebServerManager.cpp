@@ -1,6 +1,7 @@
 #include "WebServerManager.h"
 
 #include <ArduinoJson.h>
+#include "ArduinoLog.h"
 
 WebServerManager* WebServerManager::instance = nullptr;
 
@@ -11,70 +12,46 @@ WebServerManager& WebServerManager::getInstance() {
     return *instance;
 }
 
-void WebServerManager::handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-    data[len] = 0;
-    String message = String((char*)data);
+void WebServerManager::onMessageCallback(WebsocketsMessage message) {
+    Serial.print("Got Message: ");
 
-    // StaticJsonDocument<200> doc;  // Taille du document à ajuster selon tes besoins
-
-    // DeserializationError error = deserializeJson(doc, message);
-    // if (error) {
-    // Serial.println("Erreur de parsing JSON");
-    // return;
-    // }
-
-    // // Extraire les valeurs depuis le JSON
-    // int vramUsage = doc["vram_usage"];  // Récupère la valeur associée à "vram_usage"
-    // int cpuTemp = doc["cpu_temp"];      // Récupère la valeur associée à "cpu_temp"
-
-
-    notifyObservers(message);
-
-    // if (strcmp((char*)data, "taggle") == 0) {
-    //   ledState = !ledState;
-    //   notifyClients();
-    // }
-  }
-}
-
-void WebServerManager::onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      break;
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
-      break;
-    case WS_EVT_DATA:
-      instance->handleWebSocketMessage(arg, data, len);
-      break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-      break;
-  }
+    // char messageStr[256];
+    // deserializeJson(message, messageStr);
+    Log.infoln(message.data().c_str());
+    
 }
 
 void WebServerManager::setup() {
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
+    Log.infoln("Setup web server");
 
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", "ok");
-        // request->send_P(200, "text/html", index_html, processor);
-    });
+    // client.connect("ws://localhost:1532"); // TOP KEK
 
-    server.begin();
+    bool connected = client.connect("192.168.0.10", 1532, "/");
+
+    // CPT
+    client.onMessage(&WebServerManager::onMessageCallback);
+
+    Log.infoln("");
+    this->requestInfos();
+    
+    Log.infoln("> web server ready");
 }
-
 
 void WebServerManager::addObserver(ModuleObserver* observer) {
     observers.push_back(observer);
 }
 
-void WebServerManager::notifyObservers(const String& message) {
+void WebServerManager::notifyObservers(const Data& data) {
     for (ModuleObserver* observer : observers) {
-        observer->onMessageReceived(message);
+        observer->onDataReceived(data);
     }
+}
+
+void WebServerManager::requestInfos() {
+  Log.infoln("Requesting infos");
+  JsonDocument request;
+  request["command"] = "infos";
+  char json_string[256];
+  serializeJson(request, json_string);
+  client.send(json_string);
 }
