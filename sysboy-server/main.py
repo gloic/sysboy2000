@@ -15,12 +15,13 @@ def get_cpu_load():
 
 def get_infos():
     gpu = GpuNvidiaInfos().get_data()
-    result = {
-        "vram": gpu.get("used"),
-        "cpu": get_cpu_load(),
-    }
-    # SensorsInfos().sensors_info()
-    return result
+    # result = {
+    #     "vram": gpu.get("used"),
+    #     "cpu": get_cpu_load(),
+    # }
+    gpu = int(round(gpu, 0))
+    print(gpu)
+    return gpu
 
 async def handler(websocket):
     print("New client")
@@ -29,7 +30,7 @@ async def handler(websocket):
         if event["command"] == "infos" or True:
             print("command infos received")
             event = get_infos()
-            await websocket.send(json.dumps(event))
+            await websocket.send(str(event))
         else:
             print("command '" + event["command"] + "' not supported")
             event = {"error": "command not yet implemented"}

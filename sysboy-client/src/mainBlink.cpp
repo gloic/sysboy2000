@@ -3,7 +3,7 @@
 
 #define LED_BUILTIN 2
 
-void passetup()
+void steup()
 {
     pinMode(LED_BUILTIN, OUTPUT);
 }

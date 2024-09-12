@@ -6,4 +6,5 @@ class Vumeter : public Module {
         Vumeter() {}
         void setup() override;
         void showValue(int value);
+        void showMapValue(int min, int max, int value);
 };

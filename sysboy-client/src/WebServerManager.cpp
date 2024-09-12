@@ -13,9 +13,18 @@ WebServerManager& WebServerManager::getInstance() {
 }
 
 void WebServerManager::handleMessageCallback(WebsocketsMessage message) {
-    Serial.print("Got Message: ");
+    // Serial.print("Got Message: ");
+    // Serial.println(message.data());
+    // StaticJsonDocument<200> doc;
+    // deserializeJson(doc, message.data());
+    // const char* vram = doc["vram"];
     // deserializeJson(message, messageStr);
-    Log.infoln(message.data().c_str());
+
+    Data data;
+    data.vram = map(message.data().toInt(), 0, 24, 0, 255);
+    // Log.infoln("received: %f", data.vram);
+
+    this->notifyObservers(data);
 }
 
 void WebServerManager::setup() {
@@ -23,10 +32,11 @@ void WebServerManager::setup() {
 
     // client.connect("ws://localhost:1532"); // TOP KEK
 
-    bool connected = client.connect("192.168.0.10", 1532, "/");
-     client.onMessage([this](WebsocketsMessage message) {
+    client.onMessage([this](WebsocketsMessage message) {
         this->handleMessageCallback(message);
     });
+
+    bool connected = client.connect("192.168.0.10", 1532, "/");
 
     Log.infoln("");
     this->requestInfos();
@@ -51,4 +61,8 @@ void WebServerManager::requestInfos() {
   char json_string[256];
   serializeJson(request, json_string);
   client.send(json_string);
+}
+
+void WebServerManager::loop() {
+    client.poll();
 }

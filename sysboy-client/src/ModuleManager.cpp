@@ -11,8 +11,8 @@ void ModulesManager::setup() {
 }
 
 void ModulesManager::onDataReceived(const Data& data) {
-    Log.infoln("Data received");
-    Log.info("- vram: %p", data.vram);
+    // Log.infoln("Data received");
+    // Log.infoln("- vram: %d", data.vram);
 
     showVumeterValue(data.vram);
 }

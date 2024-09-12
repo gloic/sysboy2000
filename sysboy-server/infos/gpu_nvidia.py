@@ -25,14 +25,14 @@ class GpuNvidiaInfos:
 
         info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
 
-        print("Total memory:", info.total)
-        print("Free memory:", info.free)
-        print("Used memory:", info.used)
-        result = {
-            "total": info.total,
-            "free": info.free,
-            "used": info.used,
-        }
+        # print("Total memory:", info.total)
+        # print("Free memory:", info.free)
+        # print("Used memory:", info.used)
+        # result = {
+        #     "total": info.total,
+        #     "free": info.free,
+        #     "used": info.used,
+        # }
+        result = info.used / 1000000000
         nvidia_smi.nvmlShutdown()
-
         return result

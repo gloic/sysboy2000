@@ -2,7 +2,7 @@
 
 class Data {
     public:
-        float vram;
-        float cputemp;
-        float gpuTemp;
+        int vram;
+        int cputemp;
+        int gpuTemp;
 };
