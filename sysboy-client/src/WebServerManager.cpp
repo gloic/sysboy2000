@@ -12,13 +12,10 @@ WebServerManager& WebServerManager::getInstance() {
     return *instance;
 }
 
-void WebServerManager::onMessageCallback(WebsocketsMessage message) {
+void WebServerManager::handleMessageCallback(WebsocketsMessage message) {
     Serial.print("Got Message: ");
-
-    // char messageStr[256];
     // deserializeJson(message, messageStr);
     Log.infoln(message.data().c_str());
-    
 }
 
 void WebServerManager::setup() {
@@ -27,9 +24,9 @@ void WebServerManager::setup() {
     // client.connect("ws://localhost:1532"); // TOP KEK
 
     bool connected = client.connect("192.168.0.10", 1532, "/");
-
-    // CPT
-    client.onMessage(&WebServerManager::onMessageCallback);
+     client.onMessage([this](WebsocketsMessage message) {
+        this->handleMessageCallback(message);
+    });
 
     Log.infoln("");
     this->requestInfos();

@@ -29,5 +29,5 @@ class WebServerManager {
         void notifyObservers(const Data& data);
 
         static void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-        static void onMessageCallback(WebsocketsMessage message);
+        static void WebServerManager::handleMessageCallback(WebsocketsMessage message);
 };
