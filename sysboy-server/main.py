@@ -1,26 +1,34 @@
 import argparse
 import asyncio
 import json
+import subprocess as sp
 
-from websockets.asyncio.server import serve
+import psutil
+
+from config_loader import ConfigLoader
+from websocket_server import WebSocketServer
+from infos.gpu_nvidia import GpuNvidiaInfos
+
+def get_cpu_load():
+    return psutil.cpu_percent()
 
 
-def load_config(config_file):
-    with open(config_file, "r") as file:
-        json_data = json.load(file)
-    return json_data
-
+def get_infos():
+    gpu = GpuNvidiaInfos().get_data()
+    result = {
+        "vram": gpu.get("used"),
+        "cpu": get_cpu_load(),
+    }
+    # SensorsInfos().sensors_info()
+    return result
 
 async def handler(websocket):
     print("New client")
     async for message in websocket:
         event = json.loads(message)
-        if event["command"] == "infos":
+        if event["command"] == "infos" or True:
             print("command infos received")
-            event = {
-                "vram": 12,
-                "cpu": 35,
-            }
+            event = get_infos()
             await websocket.send(json.dumps(event))
         else:
             print("command '" + event["command"] + "' not supported")
@@ -28,18 +36,15 @@ async def handler(websocket):
             await websocket.send(json.dumps(event))
 
 
-async def main(config=None):
-    host = config.get("host")
-    port = config.get("port")
-
-    async with serve(handler, host, port):
-        await asyncio.get_running_loop().create_future()
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="config.json", help="Path to JSON config file in the configs folder")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.json", help="Path to JSON config file in the configs folder")
-    args = parser.parse_args()
-    config = load_config(args.config)
+    args = parse_args()
+    config = ConfigLoader().load(args.config)
 
-    asyncio.run(main(config))
+    server = WebSocketServer(config.get("websocket"))
+    asyncio.run(server.serve(handler))
